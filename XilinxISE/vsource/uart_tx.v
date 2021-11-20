@@ -37,7 +37,8 @@ module uart_tx
     input rst,
     input clk,
     input [DATA_LEN - 1: 0] data,
-    output tx_empty
+    output tx_empty,
+	output tx
     );
 
 
@@ -171,6 +172,9 @@ always @(posedge clk or negedge rst) begin
 		if(state == STATE_READY) begin
 			r_data_old <= data;
 		end
+		else if(state == STATE_STOP_BIT) begin
+			r_data_old <= 0;
+		end
 		else begin
 			r_data_old <= r_data_old;
 		end
@@ -205,7 +209,7 @@ end
 always @(posedge clk) begin
 	if(state == STATE_DATA_BITS) begin
 		if((baud_tick_count[1] == 1'b1) && (bit_n < DATA_LEN)) begin
-			bit_n <= bit_n + 1;
+			bit_n <= bit_n + 1'b1;
 		end
 		else begin
 			bit_n <= bit_n;
@@ -215,5 +219,8 @@ always @(posedge clk) begin
 		bit_n <= 0;
 	end
 end
+
+assign tx = r_tx;
+assign tx_empty = r_tx_empty;
 
 endmodule
