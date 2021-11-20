@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Shaydullin Almaz almazshai@gmail.com
 // 
 // Create Date:    15:53:26 11/13/2021 
 // Design Name: 
@@ -160,7 +160,7 @@ end
 
 // Baud tick pevious state keep for rising edge determinig
 always @(posedge clk or negedge rst) begin
-	if(~rst) begin 
+	if(!rst) begin 
 		prev_baud_tick <= 1'b0;
 	end
 	else begin
@@ -171,7 +171,7 @@ end
 // Baud ticks count increment
 always @(posedge clk or negedge rx_enable)
 begin
-	if(~rx_enable) begin
+	if(!rx_enable) begin
 		baud_tick_count <= 0;
 	end
 	else if((baud_tick != prev_baud_tick) && baud_tick) begin	//posedge of baud_tick
