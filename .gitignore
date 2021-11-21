@@ -1,8 +1,8 @@
 /XilinxISE/*
 !/XilinxISE/ipcore_dir/*.gise
-!/XilinxISE/ipcore_dir/*.xize
+!/XilinxISE/ipcore_dir/*.xise
 !/XilinxISE/vsource/*
 !/XilinxISE/vtest/*
 !/XilinxISE/iseconfig/*
 !/XilinxISE/UART_Test.gise
-!/XilinxISE/UART_Test.xize
+!/XilinxISE/UART_Test.xise
