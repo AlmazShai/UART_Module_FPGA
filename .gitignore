@@ -1,6 +1,6 @@
 /XilinxISE/*
-!/XilinxISE/ipcore_dir/*.gise
-!/XilinxISE/ipcore_dir/*.xise
+!*.gise
+!*.xise
 !/XilinxISE/vsource/*
 !/XilinxISE/vtest/*
 !/XilinxISE/iseconfig/*
