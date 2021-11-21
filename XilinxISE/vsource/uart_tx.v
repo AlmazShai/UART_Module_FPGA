@@ -69,8 +69,8 @@ reg [2:0] next_state = STATE_READY;
 reg [DATA_LEN - 1 : 0] r_data_old = 0;
 reg new_data_present = 1'b0;
 reg [4:0] baud_tick_count = 5'b0;
+reg [4:0] prev_baud_tick_count = 5'd0;
 reg prev_baud_tick = 1'b0;
-reg [3:0] bit_n = 1'b1;		//counter for shift register
 
 //out register
 reg r_tx = 1'b1;
@@ -122,7 +122,7 @@ always @(*) begin
 			else begin
 				next_state = STATE_DATA_BITS;
 			end
-			r_tx = r_data_old[bit_n];
+			r_tx = r_data_old[0];
 		end
 		STATE_PARITY_BIT : begin
 			if(baud_tick_count == (START_BIT_TICKS 
@@ -134,10 +134,10 @@ always @(*) begin
 				next_state = STATE_PARITY_BIT;
 			end
 			if(PARITY_BIT == 1) begin
-				r_tx = ^r_data_old;
+				r_tx = ~^r_data_old;
 			end
 			else begin
-				r_tx = ~^r_data_old;
+				r_tx = ^r_data_old;
 			end
 		end
 		STATE_STOP_BIT :begin
@@ -150,6 +150,10 @@ always @(*) begin
 			else begin
 				next_state = STATE_STOP_BIT;
 			end
+		end
+		default: begin
+			next_state = STATE_READY;
+			tx_enable = 0;
 		end
 		
 	endcase
@@ -169,11 +173,16 @@ always @(posedge clk or negedge rst) begin
 		else begin
 			new_data_present <= 1'b0;
 		end
-		if(state == STATE_READY) begin
+		if((state == STATE_READY) && (next_state != STATE_START_BIT)) begin
 			r_data_old <= data;
 		end
 		else if(state == STATE_STOP_BIT) begin
 			r_data_old <= 0;
+		end
+		else if((state == STATE_DATA_BITS)
+			&& (baud_tick_count != 	prev_baud_tick_count)				// baud_tick posedge
+			&& (baud_tick_count[0] == 1'b0)) begin						// every odd baud ticks							// bit_n not exceed data lenght
+				r_data_old <= {1'b0, r_data_old[DATA_LEN - 1 : 1]};		//shift data out
 		end
 		else begin
 			r_data_old <= r_data_old;
@@ -205,18 +214,12 @@ begin
 	end
 end
 
-// Data shift register
-always @(posedge clk) begin
-	if(state == STATE_DATA_BITS) begin
-		if((baud_tick_count[1] == 1'b1) && (bit_n < DATA_LEN)) begin
-			bit_n <= bit_n + 1'b1;
-		end
-		else begin
-			bit_n <= bit_n;
-		end
+always @(posedge clk or negedge rst) begin
+	if(!rst) begin
+		prev_baud_tick_count <= 0;
 	end
 	else begin
-		bit_n <= 0;
+		prev_baud_tick_count <= baud_tick_count;
 	end
 end
 
