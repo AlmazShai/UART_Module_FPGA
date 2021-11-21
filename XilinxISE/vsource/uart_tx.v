@@ -93,20 +93,20 @@ always @(*) begin
 	case(state)
 		STATE_READY : begin
 			if(new_data_present) begin
-				next_state <= STATE_START_BIT;
+				next_state = STATE_START_BIT;
 			end
 			else begin
-				next_state <= STATE_READY;
+				next_state = STATE_READY;
 			end
 			tx_enable = 1'b0;
 			r_tx_empty = 1'b1;
 		end
 		STATE_START_BIT : begin
 			if(baud_tick_count == START_BIT_TICKS) begin
-				next_state <= STATE_DATA_BITS;
+				next_state = STATE_DATA_BITS;
 			end
 			else begin
-				next_state <= STATE_START_BIT;
+				next_state = STATE_START_BIT;
 			end
 			r_tx = 1'b0;
 		end

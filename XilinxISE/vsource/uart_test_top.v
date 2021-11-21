@@ -37,16 +37,26 @@ reg [1:0] next_state = STATE_WAIT_RX;
 wire rx_ready;
 wire [7:0] rx_data;
 wire rx_empty;
+wire clk_100;
 
-uart #( .CLK_FREQ (50_000_000),
-		.BAUD_RATE(9600),
+clk my_clk
+ (// Clock in ports
+  .CLK_IN1(clk),      // IN
+  // Clock out ports
+  .CLK_OUT1(clk_100),     // OUT
+  // Status and control signals
+  .RESET(~rst),// IN
+  .LOCKED());
+
+uart #( .CLK_FREQ (100_000_000),
+		.BAUD_RATE(115_200),
 		.PARITY_BIT(0),
 		.DATA_LEN(8),
 		.STOP_BIT(1))
 uart_test
 (
     .rst(rst),
-    .clk(clk),
+    .clk(clk_100),
     .tx_data(data_echo),
     .rx_data_readed(rx_readed),
     .rx(uart_rx),
@@ -56,7 +66,7 @@ uart_test
     .rx_data(rx_data)
 );
 
-always @(posedge clk or negedge rst) begin
+always @(posedge clk_100 or negedge rst) begin
     if(!rst) begin
         state <= STATE_WAIT_RX;
     end
@@ -74,13 +84,9 @@ always @(*) begin
             else begin
                 next_state = STATE_WAIT_RX;
             end
-            rx_readed = 0;
-            data_echo = rx_data;
         end
         STATE_TX_LOAD : begin
             next_state = STATE_WAIT_TX_EMPTY;
-            data_echo = rx_data;
-            rx_readed = 1'b1;
         end
         STATE_WAIT_TX_EMPTY : begin
             if(tx_empty) begin
@@ -89,8 +95,6 @@ always @(*) begin
             else begin
                 next_state = STATE_WAIT_TX_EMPTY;
             end
-            rx_readed = 1'b0;
-            data_echo = 0;
         end
         default : begin
             next_state = STATE_WAIT_RX;
@@ -98,5 +102,24 @@ always @(*) begin
     endcase
 end 
 
+always @(posedge clk_100 or negedge rst)
+begin
+	if(!rst) begin
+		rx_readed <= 1'b0;
+		data_echo <= 8'b0;
+	end
+	else if(state == STATE_WAIT_RX) begin
+        rx_readed <= 0;
+        data_echo <= rx_data;
+    end
+    else if(state == STATE_TX_LOAD) begin
+        data_echo <= rx_data;
+        rx_readed <= 1'b1;
+    end
+    else begin
+        rx_readed <= 1'b0;
+        data_echo <= 8'b0;
+    end
+end
 
 endmodule

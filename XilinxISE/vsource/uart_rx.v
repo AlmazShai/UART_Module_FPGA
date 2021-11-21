@@ -84,7 +84,6 @@ always @(posedge clk or negedge rst)
 begin
 	if(!rst) begin
 		state <= STATE_READY;
-		next_state <= STATE_READY;
 	end
 	else begin
 		state <= next_state;
@@ -232,7 +231,7 @@ always @(posedge clk) begin
 end
 
 // Output registers update
-always @(posedge clk or negedge rst or data_readed) begin
+always @(posedge clk or negedge rst) begin
 	if(~rst || data_readed) begin
 		r_out_data <= 0;
 		r_overwritten <= 1'b0;

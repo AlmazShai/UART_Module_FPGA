@@ -36,10 +36,11 @@ begin
 	if(enable == 1) begin
 		if(counter == MAX_COUNT) begin
 			counter <= 0;
-			r_baud_rate = ~r_baud_rate;
+			r_baud_rate <= ~r_baud_rate;
 		end
 		else begin
 			counter <= counter + 1'b1;
+			r_baud_rate <= r_baud_rate;
 		end
 	end
 	else begin
